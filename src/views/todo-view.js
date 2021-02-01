@@ -29,7 +29,7 @@ class TodoView extends LitElement {
 
   render() {
     return html`
-      <div class="input-layout">
+      <div class="input-layout" @keyup="${this.shortcutListener}">
         <vaadin-text-field
           placeholder="Task"
           value="${this.task}"
@@ -40,7 +40,30 @@ class TodoView extends LitElement {
           >Add Todo</vaadin-button
         >
       </div>
+
+      <!-- NOTE: ? with checked here indicates that based on a boolean flag, we want/no want to have that attribute set: -->
+      <div class="todos-list">
+        ${this.todos.map(
+          (todo) => html`
+            <div class="todo-item">
+              <vaadin-checkbox
+                ?checked="${todo.complete}"
+                @change="${(e) =>
+                  this.updateTodoStatus(todo, e.target.checked)}"
+              >
+                > ${todo.task}
+              </vaadin-checkbox>
+            </div>
+          `
+        )}
+      </div>
     `;
+  }
+
+  shortcutListener(e) {
+    if (e.key === 'Enter') {
+      this.addTodo();
+    }
   }
 
   updateTask(e) {
@@ -59,6 +82,12 @@ class TodoView extends LitElement {
       ];
       this.task = '';
     }
+  }
+
+  updateTodoStatus(updatedTodo, complete) {
+    this.todos = this.todos.map((todo) =>
+      updatedTodo === todo ? { ...updatedTodo, complete } : todo
+    );
   }
 }
 
