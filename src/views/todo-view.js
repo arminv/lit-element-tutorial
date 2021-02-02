@@ -27,8 +27,30 @@ class TodoView extends LitElement {
     this.task = '';
   }
 
+  // NOTE: shadow DOM scopes the styles so that it only gets applied locally - we can turn off shadow DOM:
   render() {
     return html`
+      <style>
+        todo-view {
+          display: block;
+          max-width: 800px;
+          margin: 0 auto;
+        }
+        todo-view .input-layout {
+          width: 100%;
+          display: flex;
+        }
+        todo-view .input-layout vaadin-text-field {
+          flex: 1;
+          margin-right: var(--spacing);
+        }
+        todo-view .todos-list {
+          margin-top: var(--spacing);
+        }
+        todo-view .visibility-filters {
+          margin-top: calc(4 * var(--spacing));
+        }
+      </style>
       <div class="input-layout" @keyup="${this.shortcutListener}">
         <vaadin-text-field
           placeholder="Task"
@@ -43,7 +65,7 @@ class TodoView extends LitElement {
 
       <!-- NOTE: ? with checked here indicates that based on a boolean flag, we want/no want to have that attribute set: -->
       <div class="todos-list">
-        ${this.todos.map(
+        ${this.applyFilter(this.todos).map(
           (todo) => html`
             <div class="todo-item">
               <vaadin-checkbox
@@ -57,7 +79,43 @@ class TodoView extends LitElement {
           `
         )}
       </div>
+
+      <vaadin-radio-group
+        clss="visibility-filters"
+        value="${this.filter}"
+        @value-changed="${this.filterChanged}"
+      >
+        ${Object.values(VisibilityFilters).map(
+          (filter) => html`
+            <vaadin-radio-button value="${filter}"
+              >${filter}</vaadin-radio-button
+            >
+          `
+        )}
+      </vaadin-radio-group>
+      <vaadin-button @click="${this.clearCompleted}"
+        >Clear completed</vaadin-button
+      >
     `;
+  }
+
+  clearCompleted() {
+    this.todos = this.todos.filter((todo) => !todo.complete);
+  }
+
+  filterChanged(e) {
+    this.filter = e.target.value;
+  }
+
+  applyFilter(todos) {
+    switch (this.filter) {
+      case VisibilityFilters.SHOW_ACTIVE:
+        return todos.filter((todo) => !todo.complete);
+      case VisibilityFilters.SHOW_COMPLETED:
+        return todos.filter((todo) => todo.complete);
+      default:
+        return todos;
+    }
   }
 
   shortcutListener(e) {
@@ -88,6 +146,11 @@ class TodoView extends LitElement {
     this.todos = this.todos.map((todo) =>
       updatedTodo === todo ? { ...updatedTodo, complete } : todo
     );
+  }
+
+  // NOTE: here we disable shadow DOM (hence the styles are NOT scoped anymore, etc.):
+  createRenderRoot() {
+    return this;
   }
 }
 
