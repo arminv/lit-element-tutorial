@@ -45,6 +45,10 @@
     "@vaadin/vaadin-checkbox": "^2.5.0",
     "@vaadin/vaadin-radio-button": "^1.5.1",
     "@vaadin/vaadin-text-field": "^2.8.2",
-    "@webcomponents/webcomponentsjs": "^2.1.3"
+    "@webcomponents/webcomponentsjs": "^2.1.3",
+    "nanoid": "^3.1.20",
+    "pwa-helpers": "^0.9.1",
+    "redux": "^4.0.5",
+    "reselect": "^4.0.0"
   }
 }

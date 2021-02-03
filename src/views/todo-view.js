@@ -4,14 +4,10 @@ import '@vaadin/vaadin-button';
 import '@vaadin/vaadin-checkbox';
 import '@vaadin/vaadin-radio-button/vaadin-radio-button';
 import '@vaadin/vaadin-radio-button/vaadin-radio-group';
-
-const VisibilityFilters = {
-  SHOW_ALL: 'All',
-  SHOW_ACTIVE: 'Active',
-  SHOW_COMPLETED: 'Completed',
-};
-
-class TodoView extends LitElement {
+import { VisibilityFilters } from '../redux/reducer';
+import { connect } from 'pwa-helpers';
+import { store } from '../redux/store';
+class TodoView extends connect(store)(LitElement) {
   static get properties() {
     return {
       todos: { type: Array },
@@ -20,12 +16,19 @@ class TodoView extends LitElement {
     };
   }
 
-  constructor() {
-    super();
-    this.todos = [];
-    this.filter = VisibilityFilters.SHOW_ALL;
-    this.task = '';
+  // NOTE: connecting to redux gives us this helper - we can use it to set properties for our component:
+  stateChanged(state) {
+    this.todos = state.todos;
+    this.filter = state.filter;
   }
+
+  // NOTE: this is not needed anymore as we can initialize the state within `stateChanged` function above:
+  // constructor() {
+  //   super();
+  //   this.todos = [];
+  //   this.filter = VisibilityFilters.SHOW_ALL;
+  //   this.task = '';
+  // }
 
   // NOTE: shadow DOM scopes the styles so that it only gets applied locally - we can turn off shadow DOM:
   render() {
@@ -54,7 +57,7 @@ class TodoView extends LitElement {
       <div class="input-layout" @keyup="${this.shortcutListener}">
         <vaadin-text-field
           placeholder="Task"
-          value="${this.task}"
+          value="${this.task || ''}"
           @change="${this.updateTask}"
         >
         </vaadin-text-field>
