@@ -4,9 +4,15 @@ import '@vaadin/vaadin-button';
 import '@vaadin/vaadin-checkbox';
 import '@vaadin/vaadin-radio-button/vaadin-radio-button';
 import '@vaadin/vaadin-radio-button/vaadin-radio-group';
-import { VisibilityFilters } from '../redux/reducer';
+import { VisibilityFilters, getVisibleTodosSelector } from '../redux/reducer';
 import { connect } from 'pwa-helpers';
 import { store } from '../redux/store';
+import {
+  updateTodoStatus,
+  updateFilter,
+  clearCompleted,
+  addTodo,
+} from '../redux/actions';
 class TodoView extends connect(store)(LitElement) {
   static get properties() {
     return {
@@ -18,7 +24,7 @@ class TodoView extends connect(store)(LitElement) {
 
   // NOTE: connecting to redux gives us this helper - we can use it to set properties for our component:
   stateChanged(state) {
-    this.todos = state.todos;
+    this.todos = getVisibleTodosSelector(state);
     this.filter = state.filter;
   }
 
@@ -68,7 +74,7 @@ class TodoView extends connect(store)(LitElement) {
 
       <!-- NOTE: ? with checked here indicates that based on a boolean flag, we want/no want to have that attribute set: -->
       <div class="todos-list">
-        ${this.applyFilter(this.todos).map(
+        ${this.todos.map(
           (todo) => html`
             <div class="todo-item">
               <vaadin-checkbox
@@ -103,22 +109,11 @@ class TodoView extends connect(store)(LitElement) {
   }
 
   clearCompleted() {
-    this.todos = this.todos.filter((todo) => !todo.complete);
+    store.dispatch(clearCompleted());
   }
 
   filterChanged(e) {
-    this.filter = e.target.value;
-  }
-
-  applyFilter(todos) {
-    switch (this.filter) {
-      case VisibilityFilters.SHOW_ACTIVE:
-        return todos.filter((todo) => !todo.complete);
-      case VisibilityFilters.SHOW_COMPLETED:
-        return todos.filter((todo) => todo.complete);
-      default:
-        return todos;
-    }
+    store.dispatch(updateFilter(e.detail.value));
   }
 
   shortcutListener(e) {
@@ -133,22 +128,13 @@ class TodoView extends connect(store)(LitElement) {
 
   addTodo() {
     if (this.task) {
-      // NOTE: we create a NEW ARRAY and append the new task to it, this way Lit-Element can detect changes and update the DOM:
-      this.todos = [
-        ...this.todos,
-        {
-          task: this.task,
-          complete: false,
-        },
-      ];
+      store.dispatch(addTodo(this.task));
       this.task = '';
     }
   }
 
   updateTodoStatus(updatedTodo, complete) {
-    this.todos = this.todos.map((todo) =>
-      updatedTodo === todo ? { ...updatedTodo, complete } : todo
-    );
+    store.dispatch(updateTodoStatus(updatedTodo, complete));
   }
 
   // NOTE: here we disable shadow DOM (hence the styles are NOT scoped anymore, etc.):
