@@ -13,7 +13,9 @@ import {
   clearCompleted,
   addTodo,
 } from '../redux/actions';
-class TodoView extends connect(store)(LitElement) {
+import { BaseView } from './base-view';
+
+class TodoView extends connect(store)(BaseView) {
   static get properties() {
     return {
       todos: { type: Array },
@@ -135,11 +137,6 @@ class TodoView extends connect(store)(LitElement) {
 
   updateTodoStatus(updatedTodo, complete) {
     store.dispatch(updateTodoStatus(updatedTodo, complete));
-  }
-
-  // NOTE: here we disable shadow DOM (hence the styles are NOT scoped anymore, etc.):
-  createRenderRoot() {
-    return this;
   }
 }
 
