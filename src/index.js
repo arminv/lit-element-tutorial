@@ -4,6 +4,8 @@ import { Router } from '@vaadin/router';
 
 window.addEventListener('load', () => {
   initRouter();
+  // NOTE: this function creates a Service Worker for the PWA to work properly:
+  registerSW();
 });
 
 function initRouter() {
@@ -31,4 +33,16 @@ function initRouter() {
         ),
     },
   ]);
+}
+
+async function registerSW() {
+  if ('serviceWorker' in navigator) {
+    try {
+      await navigator.serviceWorker.register('./sw.js');
+    } catch (e) {
+      console.log('ServiceWorker registration failed. Sorry about that.', e);
+    }
+  } else {
+    console.log('Your browser does not support ServiceWorker.');
+  }
 }
